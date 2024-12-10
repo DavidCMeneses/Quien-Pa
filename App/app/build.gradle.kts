@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "co.edu.unal.quienpa"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "co.edu.unal.quienpa"
@@ -35,6 +35,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 

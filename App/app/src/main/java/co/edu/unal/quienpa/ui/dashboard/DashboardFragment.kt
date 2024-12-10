@@ -13,8 +13,7 @@ class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+    // Esta propiedad solo es válida entre onCreateView y onDestroyView
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -22,13 +21,17 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Obtener una instancia del ViewModel asociado con este fragmento
         val dashboardViewModel =
             ViewModelProvider(this).get(DashboardViewModel::class.java)
 
+        // Inflar el layout del fragmento utilizando data binding
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        // Enlazar el TextView con el textDashboard definido en el layout
         val textView: TextView = binding.textDashboard
+        // Observar cambios en el LiveData del ViewModel y actualizar el TextView en consecuencia
         dashboardViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
@@ -37,6 +40,7 @@ class DashboardFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Limpiar la referencia al binding para evitar fugas de memoria
         _binding = null
     }
 }
