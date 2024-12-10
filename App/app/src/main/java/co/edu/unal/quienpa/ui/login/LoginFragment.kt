@@ -42,6 +42,11 @@ class LoginFragment : Fragment() {
             }
         }
 
+        binding.btnRegister.setOnClickListener {
+            // Navegar a la pantalla de registro
+            findNavController().navigate(R.id.action_login_to_register)
+        }
+
         return root
     }
 

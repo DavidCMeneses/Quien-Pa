@@ -23,13 +23,42 @@
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
 
-    <fragment android:id="@+id/navigation_login"
+    <fragment
+        android:id="@+id/navigation_login"
         android:name="co.edu.unal.quienpa.ui.login.LoginFragment"
-        android:label="Login" tools:layout="@layout/fragment_login" >
-            <action
-                android:id="@+id/action_login_to_home" app:destination="@id/navigation_home"
-                app:popUpTo="@id/navigation_login" app:popUpToInclusive="true"/>
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/navigation_login"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/navigation_register" />
     </fragment>
 
+    <fragment
+        android:id="@+id/navigation_register"
+        android:name="co.edu.unal.quienpa.ui.register.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_register_to_button_list"
+            app:destination="@id/navigation_button_list"
+            app:popUpTo="@id/navigation_register"
+            app:popUpToInclusive="true" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/navigation_button_list"
+        android:name="co.edu.unal.quienpa.ui.buttonlist.ButtonListFragment"
+        android:label="Button List"
+        tools:layout="@layout/fragment_button_list">
+        <action
+            android:id="@+id/action_button_list_to_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/navigation_login"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

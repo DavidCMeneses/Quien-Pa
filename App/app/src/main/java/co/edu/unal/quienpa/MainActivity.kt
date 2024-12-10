@@ -31,9 +31,11 @@ class MainActivity : AppCompatActivity() {
         // Remover setupActionBarWithNavController ya que no estamos usando una barra de acción
         navView.setupWithNavController(navController)
 
-        // Listener para ocultar el BottomNavigationView en el LoginFragment
+        // Listener para ocultar el BottomNavigationView en LoginFragment, RegisterFragment, y ButtonListFragment
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.navigation_login) {
+            if (destination.id == R.id.navigation_login ||
+                destination.id == R.id.navigation_register ||
+                destination.id == R.id.navigation_button_list) {
                 navView.visibility = View.GONE
             } else {
                 navView.visibility = View.VISIBLE
