@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-//TODO: Get all users on an activity
 const {
     getUsers,
     getUserById,
