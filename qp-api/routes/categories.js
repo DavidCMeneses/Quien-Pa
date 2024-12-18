@@ -12,13 +12,13 @@ const {
     deleteCategory,
 } = require('../controllers/categoryController');
 
-router.get('/categories', getCategories);
-router.get('/categories/:id', getCategoryById);
-router.get('/categories/activities/:id', getCategoriesByActivity);
-router.get('/categories/users/:id', getCategoriesByUser);
-router.post('/categories', createCategory);
-router.post('/categories/:categoryId/users/:userId', assignUserToCategory);
-router.put('/categories/:id', updateCategory);
-router.delete('/categories/:id', deleteCategory);
+router.get('/', getCategories);
+router.get('/:id', getCategoryById);
+router.get('/activities/:id', getCategoriesByActivity);
+router.get('/users/:id', getCategoriesByUser);
+router.post('/', createCategory);
+router.post('/:categoryId/users/:userId', assignUserToCategory); //TODO: Simplify this route
+router.put('/:id', updateCategory);
+router.delete('/:id', deleteCategory);
 
 module.exports = router;

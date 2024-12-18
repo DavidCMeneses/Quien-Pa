@@ -24,6 +24,7 @@ const getUserById = async (req, res) => {
 
 const createUser = async (req, res) => {
     const { name, email, age, description } = req.body;
+    console.log(req.body);
     try {
         const result = await pool.query(
             'INSERT INTO users (name, email, age, description) VALUES ($1, $2, $3, $4) RETURNING *',

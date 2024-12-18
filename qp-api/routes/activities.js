@@ -11,12 +11,12 @@ const {
     deleteActivity,
 } = require('../controllers/activityController');
 
-router.get('/activities', getActivities);
-router.get('/activities/:id', getActivityById);
-router.post('/activities', createActivity);
-router.post('/activities/:activityId/users/:userId', assignUserToActivity);
-router.get('/activities/:id/users', getUsersByActivity);
-router.put('/activities/:id', updateActivity);
-router.delete('/activities/:id', deleteActivity);
+router.get('/', getActivities);
+router.get('/:id', getActivityById);
+router.post('/', createActivity);
+router.post('/:activityId/users/:userId', assignUserToActivity); //TODO: Simplify this route
+router.get('/:id/users', getUsersByActivity);
+router.put('/:id', updateActivity);
+router.delete('/:id', deleteActivity);
 
 module.exports = router;
