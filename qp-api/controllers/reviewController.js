@@ -3,6 +3,10 @@ const pool = require('../db');
 const addReview = async (req, res) => {
     const { activityId, reviewerId, reviewedUserId, rating, comment } = req.body;
 
+    if(reviewerId === reviewedUserId) {
+        return res.status(400).json({ message: 'You cannot review yourself.' });
+    }
+
     if (rating < 1 || rating > 5) {
         return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
     }
@@ -49,7 +53,7 @@ const getAverageRatingForActivity = async (req, res) => {
     const { activityId } = req.params;
     try {
         const result = await pool.query(
-            `SELECT AVG(rating) AS average_rating FROM review WHERE activity_id = $1`,
+            `SELECT AVG(rating) AS avg FROM review WHERE activity_id = $1`,
             [activityId]
         );
         res.status(200).json({ averageRating: result.rows[0].avg });
@@ -62,9 +66,10 @@ const getAverageRatingForUser = async (req, res) => {
     const { userId } = req.params;
     try {
         const result = await pool.query(
-            `SELECT AVG(rating) AS average_rating FROM review WHERE reviewed_user_id = $1`,
+            `SELECT AVG(rating) AS avg FROM review WHERE reviewed_user_id = $1`,
             [userId]
         );
+        console.log(result.rows[0]);
         res.status(200).json({ averageRating: result.rows[0].avg });
     } catch (error) {
         res.status(500).json({ error: error.message });

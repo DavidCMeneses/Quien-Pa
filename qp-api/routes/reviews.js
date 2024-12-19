@@ -10,7 +10,7 @@ const {
     deleteReview,
 } = require('../controllers/reviewController');
 
-router.post('/', addReview);
+router.post('/', addReview); //TODO: Ponder if /users/:userId is needed to simplify the controller
 router.get('/users/:userId', getReviewsForUser);
 router.get('/activities/:activityId', getReviewsForActivity);
 router.get('/activities/:activityId/average-rating', getAverageRatingForActivity);

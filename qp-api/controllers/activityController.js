@@ -25,6 +25,7 @@ const getActivityById = async (req, res) => {
 const createActivity = async (req, res) => {
     // User Id refers to the user who created the activity
     const { name, description, latitude, longitude, userId, date, place } = req.body;
+    console.log(req.body);
     try {
         const result = await pool.query(
             'INSERT INTO activities (name, description, latitude, longitude, created_by, date, place) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
