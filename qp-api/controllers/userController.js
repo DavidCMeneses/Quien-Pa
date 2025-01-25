@@ -13,7 +13,7 @@ const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
+        if (user.rows.length === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
         res.json(user.rows);
