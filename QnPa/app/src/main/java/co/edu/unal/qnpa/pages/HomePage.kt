@@ -44,8 +44,6 @@ fun HomePage(paddingValues: PaddingValues = PaddingValues()){
                         .background(MaterialTheme.colorScheme.inversePrimary)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                getUserInfo(key = 2039810293871, id = 123123123)
-
             }
         }
     }
