@@ -27,6 +27,9 @@ const createUser = async (req, res) => {
     const { name, email, password, age, description } = req.body;
     const hashedPassword = await bcrypt.hash(password, parseInt(process.env.SALT_ROUNDS, 10));
     try {
+        if (await pool.query('SELECT * FROM users WHERE email = $1', [email])) {
+            return res.status(409).json({ message: 'Email is already in use' });
+        }
         const result = await pool.query(
             'INSERT INTO users (name, email, password, age, description) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [name, email, hashedPassword, age, description]
