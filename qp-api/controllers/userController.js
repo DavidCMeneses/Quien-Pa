@@ -67,10 +67,28 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const isPasswordMatch = await bcrypt.compare(password, user.rows[0].password);
+        if (!isPasswordMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        res.status(200).json({ message: 'Login successful' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getUsers,
     getUserById,
     createUser,
     updateUser,
     deleteUser,
+    loginUser,
 };
