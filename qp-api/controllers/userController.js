@@ -78,15 +78,15 @@ const loginUser = async (req, res) => {
     try {
         const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
         const isPasswordMatch = await bcrypt.compare(password, user.rows[0].password);
         if (!isPasswordMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        res.status(200).json({ message: 'Login successful' });
+        res.status(200).json({userId: user.rows[0].id , success: true, message: 'Login successful' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 };
 
