@@ -45,11 +45,11 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, age, description } = req.body;
+    const { name, email, age, description, imageUrl } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE users SET name = $1, email = $2, age = $3, description = $4 WHERE id = $5 RETURNING *',
-            [name, email, age, description, id]
+            'UPDATE users SET name = $1, email = $2, age = $3, description = $4, imageUrl = $5 WHERE id = $6 RETURNING *',
+            [name, email, age, description, imageUrl, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'User not found' });
