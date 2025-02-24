@@ -2,6 +2,7 @@ const pool = require('../db');
 
 const addReview = async (req, res) => {
     const { activityId, reviewerId, reviewedUserId, rating, comment } = req.body;
+    const date = new Date();
 
     if(reviewerId === reviewedUserId) {
         return res.status(400).json({ message: 'You cannot review yourself.' });
@@ -13,9 +14,9 @@ const addReview = async (req, res) => {
 
     try {
         const result = await pool.query(
-            `INSERT INTO review (activity_id, reviewer_id, reviewed_user_id, rating, comment) 
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [activityId, reviewerId, reviewedUserId, rating, comment]
+            `INSERT INTO review (activity_id, reviewer_id, reviewed_user_id, rating, comment, date) 
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [activityId, reviewerId, reviewedUserId, rating, comment, date]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
