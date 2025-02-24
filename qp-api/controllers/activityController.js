@@ -28,7 +28,7 @@ const createActivity = async (req, res) => {
     const createdDate = new Date();
     try {
         const result = await pool.query(
-            'INSERT INTO activities (name, description, latitude, longitude, created_by, date, place, \"createdOn\" , \"imageUrl\" ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            'INSERT INTO activities (name, description, latitude, longitude, \"userId\", date, place, \"createdOn\" , \"imageUrl\" ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
             [name, description, latitude, longitude, userId, date, place, createdDate, imageUrl]
         );
         res.status(201).json(result.rows[0]);
