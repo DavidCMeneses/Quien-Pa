@@ -74,6 +74,20 @@ const assignUserToCategory = async (req, res) => {
     }
 }
 
+const assignCategoryToActivity = async (req, res) => {
+    const { categoryId} = req.params;
+    const { activityId } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO activity_category (category_id, activity_id) VALUES ($1, $2) RETURNING *',
+            [categoryId, activityId]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 const updateCategory = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
@@ -111,6 +125,7 @@ module.exports = {
     getCategoriesByUser,
     createCategory,
     assignUserToCategory,
+    assignCategoryToActivity,
     updateCategory,
     deleteCategory,
 };

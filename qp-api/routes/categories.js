@@ -8,6 +8,7 @@ const {
     getCategoriesByUser,
     createCategory,
     assignUserToCategory,
+    assignCategoryToActivity,
     updateCategory,
     deleteCategory,
 } = require('../controllers/categoryController');
@@ -18,6 +19,7 @@ router.get('/activities/:id', getCategoriesByActivity);
 router.get('/users/:id', getCategoriesByUser);
 router.post('/', createCategory);
 router.post('/:categoryId/users/:userId', assignUserToCategory); //TODO: Simplify this route
+router.post('/:categoryId/activities', assignCategoryToActivity);
 router.put('/:id', updateCategory);
 router.delete('/:id', deleteCategory);
 
