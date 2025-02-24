@@ -34,7 +34,7 @@ const createUser = async (req, res) => {
             return res.status(409).json({ message: 'Email is already in use' });
         }
         const result = await pool.query(
-            'INSERT INTO users (name, email, password, age, description) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            'INSERT INTO users (name, email, password, age, description, imageurl) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [name, email, hashedPassword, age, description, imageUrl]
         );
         res.status(201).json(result.rows[0]);
