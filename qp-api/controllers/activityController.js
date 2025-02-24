@@ -24,12 +24,12 @@ const getActivityById = async (req, res) => {
 
 const createActivity = async (req, res) => {
     // User Id refers to the user who created the activity
-    const { name, description, latitude, longitude, userId, date, place } = req.body;
+    const { name, description, latitude, longitude, userId, date, place, imageUrl } = req.body;
     const createdDate = new Date();
     try {
         const result = await pool.query(
-            'INSERT INTO activities (name, description, latitude, longitude, created_by, date, place, createdOn) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [name, description, latitude, longitude, userId, date, place, createdDate]
+            'INSERT INTO activities (name, description, latitude, longitude, created_by, date, place, \"createdOn\" , \"imageUrl\" ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [name, description, latitude, longitude, userId, date, place, createdDate, imageUrl]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -66,11 +66,11 @@ const getUsersByActivity = async (req, res) => {
 
 const updateActivity = async (req, res) => {
     const { id } = req.params;
-    const { name, description, latitude, longitude, date, place } = req.body;
+    const { name, description, latitude, longitude, date, place, imageUrl } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE activities SET name = $1, description = $2, latitude = $3, longitude = $4, date = $5, place = $6 WHERE id = $7 RETURNING *',
-            [name, description, latitude, longitude, date, place, id]
+            'UPDATE activities SET name = $1, description = $2, latitude = $3, longitude = $4, date = $5, place = $6, \"imageUrl\" = $7 WHERE id = $8 RETURNING *',
+            [name, description, latitude, longitude, date, place, imageUrl, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Activity not found' });

@@ -34,7 +34,7 @@ const createUser = async (req, res) => {
             return res.status(409).json({ message: 'Email is already in use' });
         }
         const result = await pool.query(
-            'INSERT INTO users (name, email, password, age, description, imageurl) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            'INSERT INTO users (name, email, password, age, description, \"imageUrl\" ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [name, email, hashedPassword, age, description, imageUrl]
         );
         res.status(201).json(result.rows[0]);
@@ -48,7 +48,7 @@ const updateUser = async (req, res) => {
     const { name, email, age, description, imageUrl } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE users SET name = $1, email = $2, age = $3, description = $4, imageUrl = $5 WHERE id = $6 RETURNING *',
+            'UPDATE users SET name = $1, email = $2, age = $3, description = $4, \"imageUrl\" = $5 WHERE id = $6 RETURNING *',
             [name, email, age, description, imageUrl, id]
         );
         if (result.rows.length === 0) {
