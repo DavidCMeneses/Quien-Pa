@@ -31,6 +31,9 @@ const getReviewsForUser = async (req, res) => {
             `SELECT * FROM review WHERE reviewed_user_id = $1`,
             [userId]
         );
+        if (reviews.rows.length === 0) {
+            return res.status(404).json({ message: 'No reviews found' });
+        }
         res.status(200).json(reviews.rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -57,6 +60,9 @@ const getAverageRatingForActivity = async (req, res) => {
             `SELECT AVG(rating) AS avg FROM review WHERE activity_id = $1`,
             [activityId]
         );
+        if(result.rows[0].avg === null) {
+            return res.status(200).json({ averageRating: 0 });
+        }
         res.status(200).json({ averageRating: result.rows[0].avg });
     } catch (error) {
         res.status(500).json({ error: error.message });
