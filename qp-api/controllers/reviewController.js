@@ -76,7 +76,9 @@ const getAverageRatingForUser = async (req, res) => {
             `SELECT AVG(rating) AS avg FROM review WHERE reviewed_user_id = $1`,
             [userId]
         );
-        console.log(result.rows[0]);
+        if(result.rows[0].avg === null) {
+            return res.status(200).json({ averageRating: 0 });
+        }
         res.status(200).json({ averageRating: result.rows[0].avg });
     } catch (error) {
         res.status(500).json({ error: error.message });
