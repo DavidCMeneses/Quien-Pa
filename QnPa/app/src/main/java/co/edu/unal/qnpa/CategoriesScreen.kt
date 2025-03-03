@@ -1,11 +1,13 @@
 package co.edu.unal.qnpa
 
+import CategoriesViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,125 +27,137 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalMapOf
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import co.edu.unal.qnpa.data.CategoryItem
 import co.edu.unal.qnpa.ui.theme.Pink80
 import co.edu.unal.qnpa.ui.theme.Purple40
 import co.edu.unal.qnpa.ui.theme.Purple80
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-@Preview
 @Composable
-fun CategoriesScreen(){
-    // Acá genero las categorias pero en realidad se deben pedir al backend
-    var categories by remember {
-        mutableStateOf(
-            (1..100).map {
-                CategoryItem(
-                    name = "Category $it",
-                    isSelected = false,
-                    id = it
-                )
-            }
-        )
+fun CategoriesScreen(
+    viewModel: CategoriesViewModel = viewModel(),
+    sessionManager: SessionManager, // Para obtener el userId
+    navigateToHome: () -> Unit // Navegar a la siguiente pantalla después de guardar
+) {
+    // Obtener las categorías del ViewModel
+    val categories by viewModel.categories.collectAsState()
+    val selectedCategories by viewModel.selectedCategories.collectAsState()
+
+    // Estado para manejar errores
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Obtener el userId del SessionManager
+    val userId = sessionManager.getUserId()
+
+    // Obtener las categorías y las seleccionadas previamente al iniciar la pantalla
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            viewModel.fetchCategories()
+            viewModel.fetchSelectedCategories(userId)
+        } else {
+            errorMessage = "Error: No se pudo obtener el ID del usuario."
+        }
     }
 
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-        //.padding(28.dp)
-    ){
-
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(modifier = Modifier
-                .height(170.dp)
-                .fillMaxWidth()
-                .padding(10.dp)
-
-                .clip(RoundedCornerShape(20.dp))
-                .background(Pink80.copy(alpha = 0.3f)),
-
-            ){
+            // Encabezado
+            Box(
+                modifier = Modifier
+                    .height(170.dp)
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Pink80.copy(alpha = 0.3f))
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(10.dp),
                     verticalArrangement = Arrangement.Center
-                        
                 ) {
                     Text(text = "Inicio Rápido", fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Gustos", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Texto del figma xdddddddddddddddddddddddddddddddddddddd asdljhaksd aushgdkuahskdl kajshdkjas", fontSize = 15.sp)
+                    Text(
+                        text = "Escojamos los temas que más te llaman la atención, desde los deportes hasta los videojuegos.",
+                        fontSize = 15.sp
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Box(modifier = Modifier
-                .height(400.dp)
-                .verticalScroll(rememberScrollState())
-            ){
+            // Lista de categorías
+            Box(
+                modifier = Modifier
+                    .height(400.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 LazyVerticalGrid(
                     modifier = Modifier.heightIn(max = 1000.dp),
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(20.dp)) {
-                    items(categories.size){ index: Int ->
+                    contentPadding = PaddingValues(20.dp)
+                ) {
+                    items(categories.size) { index ->
+                        val category = categories[index]
+                        val isSelected = selectedCategories.contains(category.id)
 
                         Button(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth(), // Ocupar todo el ancho disponible
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (!categories[index].isSelected) {
-                                    Purple80
-                                } else {
-                                    Purple40
-                                }
+                                containerColor = if (!isSelected) Purple80 else Purple40
                             ),
                             onClick = {
-                                categories = categories.mapIndexed { i, item ->
-                                    if (i == index) {
-                                        item.copy(isSelected = !item.isSelected)
-                                    } else {
-                                        item
-                                    }
-                                }
-                            } ) {
-                            Text(text = categories[index].name, fontSize = 12.sp)
-                            Spacer(modifier = Modifier.width(5.dp))
-                            if (categories[index].isSelected){
-                                Icon(imageVector = Icons.Default.Check,
-                                    contentDescription = "Selected",
-                                    tint = Color.Green,
-                                    modifier = Modifier.size(20.dp)
+                                viewModel.toggleCategorySelection(category.id ?: "")
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Calcular el tamaño del texto dinámicamente
+                                val textSize = if (category.name.length > 20) 10.sp else 12.sp
+                                Text(
+                                    text = category.name,
+                                    fontSize = textSize, // Tamaño dinámico
+                                    maxLines = 1, // Limitar a una línea
+                                    overflow = TextOverflow.Ellipsis, // Truncar con puntos suspensivos
+                                    modifier = Modifier.weight(1f) // Ocupar el espacio disponible
                                 )
-                            } else {
-                                Icon(imageVector = Icons.Default.Add,
-                                    contentDescription = "Selected",
-                                    tint = Color.Gray,
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Icon(
+                                    imageVector = if (isSelected) Icons.Default.Check else Icons.Default.Add,
+                                    contentDescription = if (isSelected) "Selected" else "Add",
+                                    tint = if (isSelected) Color.Green else Color.Gray,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -153,14 +166,25 @@ fun CategoriesScreen(){
                 }
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
 
-            }){
+            // Botón para guardar
+            Button(onClick = {
+                val userId = sessionManager.getUserId()
+                if (userId != null) {
+                    viewModel.saveSelectedCategories(userId)
+                    navigateToHome() // Navegar a la siguiente pantalla
+                } else {
+                    errorMessage = "Error: No se pudo obtener el ID del usuario."
+                }
+            }) {
                 Text(text = "Guardar")
+            }
+
+            // Mostrar mensaje de error si existe
+            errorMessage?.let {
+                Text(text = it, color = Color.Red, modifier = Modifier.padding(8.dp))
             }
         }
     }
-
 }

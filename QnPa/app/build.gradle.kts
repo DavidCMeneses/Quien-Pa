@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrainsKotlinSerialization)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -29,6 +30,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -56,6 +58,24 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+
+    implementation(libs.coil.compose)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.storage.ktx)
+
+    implementation(libs.datetime)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.runtime) // Para collectAsState
+
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.runtime.livedata) // Si usas LiveData
+
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

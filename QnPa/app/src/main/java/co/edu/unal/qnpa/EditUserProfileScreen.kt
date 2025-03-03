@@ -1,74 +1,96 @@
 package co.edu.unal.qnpa
 
-import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import co.edu.unal.qnpa.connections.User
+import co.edu.unal.qnpa.viewmodels.UserProfileViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import co.edu.unal.qnpa.connections.User
 import coil.compose.AsyncImage
-import co.edu.unal.qnpa.viewmodels.UserProfileViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import co.edu.unal.qnpa.ui.elements.CustomMultilineHintTextField
 
 @Composable
-fun UserProfileScreen(
+fun EditUserProfileScreen(
     sessionManager: SessionManager,
     viewModel: UserProfileViewModel = viewModel(),
-    goBack: () -> Unit = {},
-    navigateToEditProfile: () -> Unit = {}
+    goBack: () -> Unit = {}
 ) {
     val userId = sessionManager.getUserId()
     val user by viewModel.user.collectAsState()
     val rating by viewModel.rating.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+    var description by remember { mutableStateOf("") }
+    var imageUrl by remember { mutableStateOf("") }
+
+    // Inicializar la descripción y la imagen con los valores actuales del usuario
+    LaunchedEffect(user) {
+        user?.let {
+            description = it.description ?: ""
+            imageUrl = it.imageUrl ?: ""
+        }
+    }
+
+    // Lanzador para seleccionar una imagen
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            uploadImageToFirebase(
+                uri = it,
+                onSuccess = { downloadUrl ->
+                    imageUrl = downloadUrl // Actualizar la URL de la imagen
+                },
+                onError = { error ->
+                    // Manejar el error (puedes mostrar un Snackbar o un Toast)
+                    println("Error al subir la imagen: $error")
+                }
+            )
+        }
+    }
 
     // Obtener los datos del usuario cuando se inicia la pantalla
     LaunchedEffect(userId) {
@@ -78,27 +100,45 @@ fun UserProfileScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize().background(Color.White),
     ) { padding ->
-        UserProfileContent(
-            navigateToEditProfile = navigateToEditProfile,
+        EditUserProfileContent(
             paddingValues = padding,
             goBack = goBack,
             user = user,
             rating = rating,
             isLoading = isLoading,
-            error = error
+            error = error,
+            description = description,
+            onDescriptionChange = { description = it },
+            imageUrl = imageUrl,
+            onImageChange = { newImageUrl ->
+                imageUrl = newImageUrl
+            },
+            onSave = {
+                val updatedUser = user?.copy(description = description, imageUrl = imageUrl)
+                updatedUser?.let { viewModel.updateUser(it) }
+                goBack()
+            },
+            onEditImageClick = {
+                launcher.launch("image/*")
+            }
         )
     }
 }
 
 @Composable
-fun UserProfileContent(
+fun EditUserProfileContent(
     paddingValues: PaddingValues = PaddingValues(),
     goBack: () -> Unit = {},
-    navigateToEditProfile: () -> Unit = {},
     user: User?,
     rating: Double,
     isLoading: Boolean,
-    error: String?
+    error: String?,
+    description: String,
+    onDescriptionChange: (String) -> Unit,
+    imageUrl: String,
+    onImageChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onEditImageClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -111,7 +151,17 @@ fun UserProfileContent(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Barra superior con botones de retroceso y edición
+            /* Mostrar mensaje de error si existe
+            error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }*/
+
+            // Barra superior con botones de retroceso y guardar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -128,26 +178,14 @@ fun UserProfileContent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    imageVector = Icons.Rounded.Create,
-                    contentDescription = "Icon Edit",
+                    imageVector = Icons.Rounded.CheckCircle,
+                    contentDescription = "Icon Save",
                     modifier = Modifier
                         .padding(start = 16.dp, end = 16.dp)
                         .size(24.dp)
-                        .clickable {
-                            navigateToEditProfile()
-                        }
+                        .clickable { onSave() }
                 )
             }
-
-            /* Mostrar mensaje de error si existe
-            error?.let {
-                Text(
-                    text = it,
-                    color = Color.Red,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }*/
 
             // Mostrar la imagen del usuario
             Box(
@@ -163,18 +201,16 @@ fun UserProfileContent(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
-                    !user?.imageUrl.isNullOrEmpty() -> {
+                    !imageUrl.isNullOrEmpty() -> {
                         // Mostrar la imagen del usuario
-                        Log.d("UserProfileScreen", "User Image URL: ${user?.imageUrl}")
                         AsyncImage(
-                            model = user?.imageUrl,
+                            model = imageUrl,
                             contentDescription = "User Image",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     }
                     else -> {
-                        Log.d("UserProfileScreen", "User Image URL: ${user?.imageUrl}")
                         // Mostrar un ícono por defecto si no hay imagen
                         Icon(
                             imageVector = Icons.Rounded.AccountCircle,
@@ -183,6 +219,23 @@ fun UserProfileContent(
                         )
                     }
                 }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .align(Alignment.Center)
+                )
+                // Botón para editar la imagen
+                Icon(
+                    imageVector = Icons.Rounded.Edit,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = "Edit Image",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(32.dp)
+                        .clickable { onEditImageClick() }
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -220,28 +273,18 @@ fun UserProfileContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Descripción del usuario
-            Box(
+            // Campo de texto para editar la descripción
+            CustomMultilineHintTextField(
+                value = description,
+                onValueChange = onDescriptionChange,
+                hint = "Escribe una descripción...",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .background(
-                        Color.LightGray.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.inversePrimary)
                     .padding(16.dp)
-            ) {
-                Text(
-                    text = user?.description ?: "No hay descripción disponible",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (user?.description.isNullOrEmpty()) {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
-            }
+            )
         }
     }
 }
-

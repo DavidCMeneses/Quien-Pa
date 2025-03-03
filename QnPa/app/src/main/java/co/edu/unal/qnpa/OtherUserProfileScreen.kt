@@ -45,7 +45,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,17 +53,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import co.edu.unal.qnpa.connections.User
 import coil.compose.AsyncImage
-import co.edu.unal.qnpa.viewmodels.UserProfileViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import co.edu.unal.qnpa.viewmodels.OtherUserProfileViewModel
 
 @Composable
-fun UserProfileScreen(
-    sessionManager: SessionManager,
-    viewModel: UserProfileViewModel = viewModel(),
-    goBack: () -> Unit = {},
-    navigateToEditProfile: () -> Unit = {}
+fun OtherUserProfileScreen(
+    userId: String, // Recibir el userId como parámetro
+    viewModel: OtherUserProfileViewModel = viewModel(), // ViewModel específico para otros usuarios
+    goBack: () -> Unit = {} // Función para retroceder
 ) {
-    val userId = sessionManager.getUserId()
     val user by viewModel.user.collectAsState()
     val rating by viewModel.rating.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -72,14 +69,13 @@ fun UserProfileScreen(
 
     // Obtener los datos del usuario cuando se inicia la pantalla
     LaunchedEffect(userId) {
-        userId?.let { viewModel.fetchUserData(it) }
+        viewModel.fetchUserData(userId)
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(Color.White),
     ) { padding ->
-        UserProfileContent(
-            navigateToEditProfile = navigateToEditProfile,
+        OtherUserProfileContent(
             paddingValues = padding,
             goBack = goBack,
             user = user,
@@ -91,10 +87,9 @@ fun UserProfileScreen(
 }
 
 @Composable
-fun UserProfileContent(
+fun OtherUserProfileContent(
     paddingValues: PaddingValues = PaddingValues(),
     goBack: () -> Unit = {},
-    navigateToEditProfile: () -> Unit = {},
     user: User?,
     rating: Double,
     isLoading: Boolean,
@@ -111,7 +106,7 @@ fun UserProfileContent(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Barra superior con botones de retroceso y edición
+            // Barra superior con botón de retroceso
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,16 +122,6 @@ fun UserProfileContent(
                         .clickable { goBack() }
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    imageVector = Icons.Rounded.Create,
-                    contentDescription = "Icon Edit",
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp)
-                        .size(24.dp)
-                        .clickable {
-                            navigateToEditProfile()
-                        }
-                )
             }
 
             /* Mostrar mensaje de error si existe
@@ -165,7 +150,7 @@ fun UserProfileContent(
                     }
                     !user?.imageUrl.isNullOrEmpty() -> {
                         // Mostrar la imagen del usuario
-                        Log.d("UserProfileScreen", "User Image URL: ${user?.imageUrl}")
+                        Log.d("OtherUserProfileScreen", "User Image URL: ${user?.imageUrl}")
                         AsyncImage(
                             model = user?.imageUrl,
                             contentDescription = "User Image",
@@ -174,7 +159,7 @@ fun UserProfileContent(
                         )
                     }
                     else -> {
-                        Log.d("UserProfileScreen", "User Image URL: ${user?.imageUrl}")
+                        Log.d("OtherUserProfileScreen", "User Image URL: ${user?.imageUrl}")
                         // Mostrar un ícono por defecto si no hay imagen
                         Icon(
                             imageVector = Icons.Rounded.AccountCircle,
@@ -244,4 +229,3 @@ fun UserProfileContent(
         }
     }
 }
-
